@@ -122,7 +122,7 @@ bot.command('help', async (ctx) => {
     `/delnote নাম — Note মুছো\n\n` +
 
     `⏰ *Schedule:*\n` +
-    `/schedule HH:MM মেসেজ — Auto মেসেজ\n\n` +
+    `/schedule HH:MM মেসেজ — Auto মেসেজ\n/settitle নাম — Bot Nickname সেট\n/setmytitle নাম — তোমার Nickname সেট\n\n` +
 
     `⚡ *Nova v${config.VERSION}* | by ${config.OWNER_NAME}`,
     { parse_mode: 'Markdown' }
@@ -169,6 +169,8 @@ bot.command('mute',      admin.mute);
 bot.command('unmute',    admin.unmute);
 bot.command('pin',       admin.pin);
 bot.command('unpin',     admin.unpin);
+bot.command('settitle',   admin.setTitle);
+bot.command('setmytitle', admin.setMyTitle);
 bot.command('stats',     admin.stats);
 bot.command('announce',  admin.announce);
 
