@@ -11,6 +11,10 @@ async function isAdmin(ctx) {
   try {
     // Private chat এ সবসময় true
     if (ctx.chat.type === 'private') return true;
+
+    // Owner সবসময় Admin
+    if (String(ctx.from.id) === String(config.OWNER_ID)) return true;
+
     const m = await ctx.getChatMember(ctx.from.id);
     return ['administrator', 'creator'].includes(m.status);
   } catch {
@@ -18,20 +22,19 @@ async function isAdmin(ctx) {
   }
 }
 
-// ── Helper: Delete + Warn message ────────────
+// ── Helper: Delete + Warn ─────────────────────
 async function deleteAndWarn(ctx, warningText) {
   try {
     await ctx.deleteMessage();
     const msg = await ctx.reply(warningText, { parse_mode: 'Markdown' });
-    // ৫ সেকেন্ড পর warning মুছে যাবে
     setTimeout(() => ctx.deleteMessage(msg.message_id).catch(() => {}), 5000);
   } catch {}
 }
 
 // ── /antispam Command ─────────────────────────
 async function toggleAntiSpam(ctx) {
-  const admin = await isAdmin(ctx);
-  if (!admin) return ctx.reply('❌ শুধু Admin এই কমান্ড ব্যবহার করতে পারবে!');
+  if (!(await isAdmin(ctx)))
+    return ctx.reply('❌ শুধু Admin এই কমান্ড ব্যবহার করতে পারবে!');
 
   const chatId = ctx.chat.id;
   db.initGroup(chatId, config);
@@ -50,8 +53,8 @@ async function toggleAntiSpam(ctx) {
 
 // ── /antilink Command ─────────────────────────
 async function toggleAntiLink(ctx) {
-  const admin = await isAdmin(ctx);
-  if (!admin) return ctx.reply('❌ শুধু Admin এই কমান্ড ব্যবহার করতে পারবে!');
+  if (!(await isAdmin(ctx)))
+    return ctx.reply('❌ শুধু Admin এই কমান্ড ব্যবহার করতে পারবে!');
 
   const chatId = ctx.chat.id;
   db.initGroup(chatId, config);
@@ -70,8 +73,8 @@ async function toggleAntiLink(ctx) {
 
 // ── /antibadword Command ──────────────────────
 async function toggleAntiBadWord(ctx) {
-  const admin = await isAdmin(ctx);
-  if (!admin) return ctx.reply('❌ শুধু Admin এই কমান্ড ব্যবহার করতে পারবে!');
+  if (!(await isAdmin(ctx)))
+    return ctx.reply('❌ শুধু Admin এই কমান্ড ব্যবহার করতে পারবে!');
 
   const chatId = ctx.chat.id;
   db.initGroup(chatId, config);
@@ -90,27 +93,22 @@ async function toggleAntiBadWord(ctx) {
 
 // ── Main Message Filter ───────────────────────
 async function filterMessage(ctx) {
-  // Private chat এ কাজ নেই
   if (ctx.chat.type === 'private') return;
 
   const chatId = ctx.chat.id;
   const group  = db.initGroup(chatId, config);
 
-  // Admin হলে skip
   if (await isAdmin(ctx)) {
     db.incrementMessages(chatId);
     return;
   }
 
-  const text     = ctx.message?.text || ctx.message?.caption || '';
-  const mention  = `[${ctx.from.first_name}](tg://user?id=${ctx.from.id})`;
+  const text    = ctx.message?.text || ctx.message?.caption || '';
+  const mention = `[${ctx.from.first_name}](tg://user?id=${ctx.from.id})`;
 
   // ── 1. Anti-Link ───────────────────────────
   if (group.antiLink && text.match(/https?:\/\/|t\.me\//i)) {
-    return deleteAndWarn(
-      ctx,
-      `⚠️ ${mention}, গ্রুপে লিংক শেয়ার করা নিষেধ!`
-    );
+    return deleteAndWarn(ctx, `⚠️ ${mention}, গ্রুপে লিংক শেয়ার করা নিষেধ!`);
   }
 
   // ── 2. Bad Word Filter ─────────────────────
@@ -118,10 +116,7 @@ async function filterMessage(ctx) {
     const lower = text.toLowerCase();
     const found = config.BAD_WORDS.some(w => lower.includes(w.toLowerCase()));
     if (found) {
-      return deleteAndWarn(
-        ctx,
-        `⚠️ ${mention}, অশ্লীল ভাষা ব্যবহার করা নিষেধ!`
-      );
+      return deleteAndWarn(ctx, `⚠️ ${mention}, অশ্লীল ভাষা ব্যবহার করা নিষেধ!`);
     }
   }
 
@@ -129,15 +124,11 @@ async function filterMessage(ctx) {
   if (group.antiSpam) {
     const count = db.trackSpam(chatId, ctx.from.id, config.SPAM.timeWindow);
     if (count > config.SPAM.maxMessages) {
-      // Spam করলে auto mute
       try {
         await ctx.restrictChatMember(ctx.from.id, {
           permissions: { can_send_messages: false },
         });
-        await deleteAndWarn(
-          ctx,
-          `🔇 ${mention}, অতিরিক্ত মেসেজ পাঠানোর কারণে *Mute* করা হয়েছে!`
-        );
+        await deleteAndWarn(ctx, `🔇 ${mention}, অতিরিক্ত মেসেজ পাঠানোর কারণে *Mute* করা হয়েছে!`);
       } catch {}
       return;
     }
