@@ -7,7 +7,6 @@ const cron   = require('node-cron');
 const db     = require('../data/groups');
 const config = require('../config');
 
-// Active quiz sessions { chatId: { question, answer, timer } }
 const activeSessions = {};
 
 // ── Helper: Check Admin ───────────────────────
@@ -15,6 +14,10 @@ async function isAdmin(ctx) {
   try {
     // Private chat এ সবসময় true
     if (ctx.chat.type === 'private') return true;
+
+    // Owner সবসময় Admin
+    if (String(ctx.from.id) === String(config.OWNER_ID)) return true;
+
     const m = await ctx.getChatMember(ctx.from.id);
     return ['administrator', 'creator'].includes(m.status);
   } catch {
@@ -35,7 +38,6 @@ async function startQuiz(ctx) {
   const questions = config.QUIZ;
   const q         = questions[Math.floor(Math.random() * questions.length)];
 
-  // Numbered options তৈরি
   const optionsText = q.options
     .map((opt, i) => `${i + 1}. ${opt}`)
     .join('\n');
@@ -50,7 +52,7 @@ async function startQuiz(ctx) {
           { parse_mode: 'Markdown' }
         );
       } catch {}
-    }, 30000), // ৩০ সেকেন্ড সময়
+    }, 30000),
   };
 
   await ctx.reply(
@@ -66,11 +68,8 @@ async function checkQuizAnswer(ctx) {
   const chatId = ctx.chat.id;
   if (!activeSessions[chatId]) return;
 
-  const text   = ctx.message.text?.trim();
-  const answer = parseInt(text) - 1;
-  const q      = config.QUIZ.find(
-    (_, i) => i === activeSessions[chatId]?.questionIndex
-  );
+  const text    = ctx.message.text?.trim();
+  const answer  = parseInt(text) - 1;
   const correct = activeSessions[chatId].answer;
 
   if (answer === correct) {
@@ -96,7 +95,6 @@ async function saveNote(ctx) {
   const chatId = ctx.chat.id;
   db.initGroup(chatId, config);
 
-  // ব্যবহার: /note নামা এই হলো note এর টেক্সট
   const parts = ctx.message.text.split(' ');
   const name  = parts[1];
   const text  = parts.slice(2).join(' ');
@@ -128,15 +126,14 @@ async function listNotes(ctx) {
   db.initGroup(chatId, config);
 
   const notes = db.getAllNotes(chatId);
-  const names  = Object.keys(notes);
+  const names = Object.keys(notes);
 
   if (names.length === 0)
     return ctx.reply('📝 কোনো note সেভ নেই।');
 
   const list = names.map(n => `• \`${n}\``).join('\n');
   await ctx.reply(
-    `📝 *সেভ করা Notes:*\n\n${list}\n\n` +
-    `পড়তে: \`/get নাম\``,
+    `📝 *সেভ করা Notes:*\n\n${list}\n\nপড়তে: \`/get নাম\``,
     { parse_mode: 'Markdown' }
   );
 }
@@ -162,9 +159,8 @@ async function scheduleMsg(ctx) {
   if (!(await isAdmin(ctx)))
     return ctx.reply('❌ শুধু Admin scheduled message সেট করতে পারবে!');
 
-  // ব্যবহার: /schedule HH:MM মেসেজ
   const parts = ctx.message.text.split(' ');
-  const time  = parts[1]; // e.g. "09:00"
+  const time  = parts[1];
   const text  = parts.slice(2).join(' ');
 
   if (!time || !text)
@@ -177,7 +173,7 @@ async function scheduleMsg(ctx) {
   if (!hour || !minute)
     return ctx.reply('❌ সময় সঠিক নয়! উদাহরণ: `09:00`', { parse_mode: 'Markdown' });
 
-  const chatId = ctx.chat.id;
+  const chatId   = ctx.chat.id;
   const cronExpr = `${minute} ${hour} * * *`;
 
   cron.schedule(cronExpr, async () => {
@@ -193,11 +189,7 @@ async function scheduleMsg(ctx) {
 }
 
 module.exports = {
-  startQuiz,
-  checkQuizAnswer,
-  saveNote,
-  getNote,
-  listNotes,
-  deleteNote,
+  startQuiz, checkQuizAnswer,
+  saveNote, getNote, listNotes, deleteNote,
   scheduleMsg,
 };
