@@ -7,7 +7,7 @@
 //   Telegram  : https://t.me/mdmainulislaminfo
 //   Channel   : https://t.me/mainul_x_official
 //   License   : MIT License
-//   Copyright : 2026 MAINULMAINUL - X
+//   Copyright : 2026 MAINUL - X
 // ============================================
 
 const { Telegraf, Markup } = require('telegraf');
@@ -23,48 +23,59 @@ const fun     = require('./handlers/fun');
 const bot = new Telegraf(config.BOT_TOKEN);
 
 // ============================================
-//   /start — Private Chat
+//   /start Command
 // ============================================
 bot.start(async (ctx) => {
-  if (ctx.chat.type !== 'private') return;
+  // ── Private Chat ───────────────────────────
+  if (ctx.chat.type === 'private') {
+    await ctx.reply(
+      `⚡ *Nova — Advanced Group Manager*\n\n` +
+      `আসসালামু আলাইকুম! আমি Nova, তোমার গ্রুপের সেরা রক্ষক! 🛡️\n\n` +
+      `✨ *আমার ফিচারসমূহ:*\n` +
+      `👋 Smart Welcome + User Mention\n` +
+      `🛡️ Anti-Spam Protection\n` +
+      `🔗 Anti-Link Filter\n` +
+      `🔞 Bad Word Filter\n` +
+      `⚠️ Warning System (${config.WARN_LIMIT} strike → Auto Ban)\n` +
+      `🚫 Ban | Mute | Kick | Unban\n` +
+      `📌 Pin & Unpin Messages\n` +
+      `📊 Group Statistics\n` +
+      `🎮 Quiz System\n` +
+      `📝 Notes System\n` +
+      `⏰ Scheduled Messages\n` +
+      `📢 Announcements\n\n` +
+      `➕ আমাকে তোমার গ্রুপে Add করো এবং *Admin* বানাও!`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [
+            Markup.button.url(
+              '➕ গ্রুপে Add করো',
+              `https://t.me/${ctx.botInfo.username}?startgroup=true`
+            ),
+          ],
+          [
+            Markup.button.url('📢 Channel', config.LINKS.channel),
+            Markup.button.url('👥 Group',   config.LINKS.group),
+          ],
+          [
+            Markup.button.url('👨‍💻 Developer', config.LINKS.telegram),
+            Markup.button.url('💻 GitHub',     config.LINKS.github),
+          ],
+        ]),
+      }
+    );
+  }
 
-  await ctx.reply(
-    `⚡ *Nova — Advanced Group Manager*\n\n` +
-    `আসসালামু আলাইকুম! আমি Nova, তোমার গ্রুপের সেরা রক্ষক! 🛡️\n\n` +
-    `✨ *আমার ফিচারসমূহ:*\n` +
-    `👋 Smart Welcome + User Mention\n` +
-    `🛡️ Anti-Spam Protection\n` +
-    `🔗 Anti-Link Filter\n` +
-    `🔞 Bad Word Filter\n` +
-    `⚠️ Warning System (${config.WARN_LIMIT} strike → Auto Ban)\n` +
-    `🚫 Ban | Mute | Kick | Unban\n` +
-    `📌 Pin & Unpin Messages\n` +
-    `📊 Group Statistics\n` +
-    `🎮 Quiz System\n` +
-    `📝 Notes System\n` +
-    `⏰ Scheduled Messages\n` +
-    `📢 Announcements\n\n` +
-    `➕ আমাকে তোমার গ্রুপে Add করো এবং *Admin* বানাও!`,
-    {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([
-        [
-          Markup.button.url(
-            '➕ গ্রুপে Add করো',
-            `https://t.me/${ctx.botInfo.username}?startgroup=true`
-          ),
-        ],
-        [
-          Markup.button.url('📢 Channel', config.LINKS.channel),
-          Markup.button.url('👥 Group',   config.LINKS.group),
-        ],
-        [
-          Markup.button.url('👨‍💻 Developer', config.LINKS.telegram),
-          Markup.button.url('💻 GitHub',     config.LINKS.github),
-        ],
-      ]),
-    }
-  );
+  // ── Group Chat ─────────────────────────────
+  if (ctx.chat.type === 'group' || ctx.chat.type === 'supergroup') {
+    await ctx.reply(
+      `⚡ *Nova চালু আছে!*\n\n` +
+      `🛡️ তোমার গ্রুপ সুরক্ষিত আছে!\n\n` +
+      `📋 সব কমান্ড দেখতে /help লিখো`,
+      { parse_mode: 'Markdown' }
+    );
+  }
 });
 
 // ============================================
@@ -119,7 +130,7 @@ bot.command('help', async (ctx) => {
 });
 
 // ============================================
-//   /info — Bot Info
+//   /info Command
 // ============================================
 bot.command('info', async (ctx) => {
   await ctx.reply(
@@ -130,7 +141,7 @@ bot.command('info', async (ctx) => {
     `📱 Telegram: ${config.LINKS.telegram}\n` +
     `💻 GitHub: ${config.LINKS.github}\n` +
     `📢 Channel: ${config.LINKS.channel}\n\n` +
-    `© 2025 MAINUL - X | MIT License`,
+    `© 2026 MAINUL - X | MIT License`,
     { parse_mode: 'Markdown' }
   );
 });
@@ -190,7 +201,7 @@ bot.on('message', async (ctx) => {
 //   Error Handler
 // ============================================
 bot.catch((err, ctx) => {
-  console.error(`[NovaX Error] ${ctx.updateType}:`, err);
+  console.error(`[Nova Error] ${ctx.updateType}:`, err);
 });
 
 // ============================================
