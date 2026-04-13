@@ -9,6 +9,8 @@ const db          = require('../data/groups');
 // ── Helper: Check Admin ───────────────────────
 async function isAdmin(ctx) {
   try {
+    // Private chat এ সবসময় true
+    if (ctx.chat.type === 'private') return true;
     const m = await ctx.getChatMember(ctx.from.id);
     return ['administrator', 'creator'].includes(m.status);
   } catch {
