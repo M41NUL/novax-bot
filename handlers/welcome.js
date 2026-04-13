@@ -11,6 +11,10 @@ async function isAdmin(ctx) {
   try {
     // Private chat এ সবসময় true
     if (ctx.chat.type === 'private') return true;
+
+    // Owner সবসময় Admin
+    if (String(ctx.from.id) === String(config.OWNER_ID)) return true;
+
     const m = await ctx.getChatMember(ctx.from.id);
     return ['administrator', 'creator'].includes(m.status);
   } catch {
@@ -25,7 +29,6 @@ async function onNewMember(ctx) {
   const members = ctx.message.new_chat_members;
 
   for (const member of members) {
-    // Bot নিজে add হলে
     if (member.id === ctx.botInfo.id) {
       await ctx.reply(
         `⚡ *Nova এখানে!*\n\n` +
@@ -44,7 +47,6 @@ async function onNewMember(ctx) {
 
     if (!group.welcomeEnabled) continue;
 
-    // User mention তৈরি করো
     const mention = `[${member.first_name}](tg://user?id=${member.id})`;
     const text    = group.welcomeMsg
       .replace('{mention}',   mention)
