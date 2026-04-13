@@ -10,6 +10,10 @@ async function isAdmin(ctx) {
   try {
     // Private chat এ সবসময় true
     if (ctx.chat.type === 'private') return true;
+
+    // Owner সবসময় Admin
+    if (String(ctx.from.id) === String(config.OWNER_ID)) return true;
+
     const m = await ctx.getChatMember(ctx.from.id);
     return ['administrator', 'creator'].includes(m.status);
   } catch {
@@ -166,9 +170,9 @@ async function unmute(ctx) {
 
   await ctx.restrictChatMember(target.id, {
     permissions: {
-      can_send_messages:       true,
-      can_send_media_messages: true,
-      can_send_other_messages: true,
+      can_send_messages:         true,
+      can_send_media_messages:   true,
+      can_send_other_messages:   true,
       can_add_web_page_previews: true,
     },
   });
@@ -199,11 +203,70 @@ async function unpin(ctx) {
   await ctx.reply('📌 মেসেজ Unpin করা হয়েছে!');
 }
 
+// ── /settitle Command (Bot এর Group Nickname) ─
+async function setTitle(ctx) {
+  if (!(await isAdmin(ctx)))
+    return ctx.reply('❌ শুধু Admin এই কমান্ড ব্যবহার করতে পারবে!');
+
+  const text = ctx.message.text.split('/settitle ')[1];
+  if (!text)
+    return ctx.reply(
+      '✏️ ব্যবহার: `/settitle নতুন নাম`\n\nউদাহরণ: `/settitle Nova Guard`',
+      { parse_mode: 'Markdown' }
+    );
+
+  try {
+    // Bot এর group nickname পরিবর্তন
+    await ctx.telegram.setChatAdministratorCustomTitle(
+      ctx.chat.id,
+      ctx.botInfo.id,
+      text
+    );
+    await ctx.reply(
+      `✅ Bot এর Nickname পরিবর্তন হয়েছে!\n\n🏷️ নতুন নাম: *${text}*`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (e) {
+    await ctx.reply(
+      `❌ Nickname পরিবর্তন হয়নি!\n\n` +
+      `⚠️ কারণ: Bot কে *Anonymous Admin* না করে *Normal Admin* করো।`,
+      { parse_mode: 'Markdown' }
+    );
+  }
+}
+
+// ── /setmytitle Command (নিজের Nickname) ──────
+async function setMyTitle(ctx) {
+  if (!(await isAdmin(ctx)))
+    return ctx.reply('❌ শুধু Admin এই কমান্ড ব্যবহার করতে পারবে!');
+
+  const text = ctx.message.text.split('/setmytitle ')[1];
+  if (!text)
+    return ctx.reply(
+      '✏️ ব্যবহার: `/setmytitle তোমার নতুন নাম`\n\nউদাহরণ: `/setmytitle 👑 Owner`',
+      { parse_mode: 'Markdown' }
+    );
+
+  try {
+    await ctx.telegram.setChatAdministratorCustomTitle(
+      ctx.chat.id,
+      ctx.from.id,
+      text
+    );
+    await ctx.reply(
+      `✅ তোমার Nickname পরিবর্তন হয়েছে!\n\n🏷️ নতুন নাম: *${text}*`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (e) {
+    await ctx.reply('❌ Nickname পরিবর্তন হয়নি! তুমি কি Admin?', { parse_mode: 'Markdown' });
+  }
+}
+
 // ── /stats Command ────────────────────────────
 async function stats(ctx) {
-  const chatId  = ctx.chat.id;
+  const chatId   = ctx.chat.id;
   db.initGroup(chatId, config);
-  const s = db.getStats(chatId);
+  const s        = db.getStats(chatId);
   const chatInfo = ctx.chat;
 
   await ctx.reply(
@@ -225,9 +288,16 @@ async function announce(ctx) {
   if (!text) return ctx.reply('✏️ ব্যবহার: `/announce তোমার ঘোষণা`', { parse_mode: 'Markdown' });
 
   await ctx.reply(
-    `📢 *ঘোষণা*\n\n${text}\n\n— NovaX`,
+    `📢 *ঘোষণা*\n\n${text}\n\n— Nova`,
     { parse_mode: 'Markdown' }
   );
 }
 
-module.exports = { warn, warns, resetWarn, ban, unban, kick, mute, unmute, pin, unpin, stats, announce };
+module.exports = {
+  warn, warns, resetWarn,
+  ban, unban, kick,
+  mute, unmute,
+  pin, unpin,
+  setTitle, setMyTitle,
+  stats, announce,
+};
