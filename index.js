@@ -1,5 +1,5 @@
 // ============================================
-//   NovaX - Advanced Telegram Group Manager
+//   Nova - Advanced Telegram Group Manager
 //   Version   : 1.0.0
 //   Author    : Md. Mainul Islam
 //   Owner     : MAINUL - X
