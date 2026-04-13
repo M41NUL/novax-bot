@@ -1,0 +1,43 @@
+# ============================================
+#   Nova - Advanced Telegram Group Manager
+#   Author    : Md. Mainul Islam
+#   Owner     : MAINUL - X
+#   GitHub    : https://github.com/M41NUL
+#   License   : MIT License
+#   Copyright : 2026 MAINUL - X
+# ============================================
+
+# ── Environment Variables ─────────────────────
+.env
+.env.local
+.env.development
+.env.production
+
+# ── Node Modules ──────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Logs ──────────────────────────────────────
+logs/
+*.log
+
+# ── OS Files ──────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editor Files ──────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ── Temp Files ────────────────────────────────
+tmp/
+temp/
+*.tmp
+*.cache
