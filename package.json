@@ -1,0 +1,32 @@
+{
+  "name": "novax-bot",
+  "version": "1.0.0",
+  "description": "Nova — Advanced Telegram Group Management Bot | Anti-Spam • Welcome • Warning System • Quiz • Notes & More",
+  "main": "index.js",
+  "author": "Md. Mainul Islam (MAINUL - X)",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "telegraf": "^4.15.0",
+    "dotenv": "^16.0.0",
+    "node-cron": "^3.0.0"
+  },
+  "keywords": [
+    "telegram-bot",
+    "nodejs",
+    "telegraf",
+    "group-management",
+    "anti-spam",
+    "welcome-bot",
+    "warning-system",
+    "quiz-bot",
+    "open-source"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/M41NUL/novax-bot"
+  },
+  "homepage": "https://github.com/M41NUL/novax-bot"
+}
